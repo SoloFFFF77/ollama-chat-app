@@ -9,7 +9,7 @@ const OLLAMA_URL = 'http://localhost:11434/api/generate';
 
 app.use(cors());
 app.use(express.json());
-app.use(express.static(path.join(__current_dir, 'public')));
+app.use(express.static(path.join(__dirname, 'public')));
 
 app.post('/api/chat', async (req, res) => {
     const { model, prompt } = req.body;
