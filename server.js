@@ -62,6 +62,24 @@ app.get('/api/models', async (req, res) => {
     }
 });
 
+app.post('/api/pull-model', async (req, res) => {
+    const { model } = req.body;
+    try {
+        const response = await axios.post('http://localhost:11434/api/pull', {
+            name: model,
+            stream: true
+        }, { responseType: 'stream' });
+
+        res.setHeader('Content-Type', 'text/plain; charset=utf-8');
+        res.setHeader('Transfer-Encoding', 'chunked');
+
+        response.data.pipe(res);
+    } catch (error) {
+        console.error('Error pulling model:', error.message);
+        res.status(500).json({ error: 'Could not pull model' });
+    }
+});
+
 app.listen(PORT, () => {
     console.log(`Server running at http://localhost:${PORT}`);
 });
