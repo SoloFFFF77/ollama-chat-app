@@ -67,12 +67,12 @@ ollama-chat-app/
 
 ### Method 1: One-Line Install (Easiest)
 ```bash
-curl -fsSL https://raw.githubusercontent.com/yourusername/ollama-chat-app/main/quick-install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/SoloFFFF77/ollama-chat-app/main/quick-install.sh | bash
 ```
 
 ### Method 2: Git Clone
 ```bash
-git clone https://github.com/yourusername/ollama-chat-app.git
+git clone https://github.com/SoloFFFF77/ollama-chat-app.git
 cd ollama-chat-app
 chmod +x install-termux.sh
 ./install-termux.sh
@@ -81,7 +81,7 @@ chmod +x install-termux.sh
 ### Method 3: Manual Setup
 ```bash
 pkg update && pkg install nodejs
-git clone https://github.com/yourusername/ollama-chat-app.git
+git clone https://github.com/SoloFFFF77/ollama-chat-app.git
 cd ollama-chat-app
 npm install
 ./start-all.sh
@@ -324,6 +324,6 @@ Everything is ready to:
 ---
 
 **Quick Links:**
-- GitHub: https://github.com/yourusername/ollama-chat-app
+- GitHub: https://github.com/SoloFFFF77/ollama-chat-app
 - Ollama: https://ollama.ai
 - Termux: https://termux.com

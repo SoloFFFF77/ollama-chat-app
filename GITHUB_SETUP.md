@@ -19,10 +19,10 @@ git init
 
 ### 3. Add GitHub Remote
 
-Replace `yourusername` with your actual GitHub username:
+Replace `SoloFFFF77` with your actual GitHub username:
 
 ```bash
-git remote add origin https://github.com/yourusername/ollama-chat-app.git
+git remote add origin https://github.com/SoloFFFF77/ollama-chat-app.git
 ```
 
 ### 4. Configure Git User (First Time Only)
@@ -60,8 +60,8 @@ cd ~/ollama-chat-app
 # Initialize git
 git init
 
-# Add remote (replace yourusername)
-git remote add origin https://github.com/yourusername/ollama-chat-app.git
+# Add remote (replace SoloFFFF77)
+git remote add origin https://github.com/SoloFFFF77/ollama-chat-app.git
 
 # Configure git
 git config --global user.name "Your Name"
@@ -100,15 +100,15 @@ After pushing to GitHub, update these URLs in your documentation:
 
 **In README.md:**
 ```markdown
-curl -fsSL https://raw.githubusercontent.com/yourusername/ollama-chat-app/main/install-termux.sh | bash
+curl -fsSL https://raw.githubusercontent.com/SoloFFFF77/ollama-chat-app/main/install-termux.sh | bash
 ```
 
 **In quick-install.sh:**
 ```bash
-REPO_URL="https://github.com/yourusername/ollama-chat-app.git"
+REPO_URL="https://github.com/SoloFFFF77/ollama-chat-app.git"
 ```
 
-Replace `yourusername` with your actual GitHub username.
+Replace `SoloFFFF77` with your actual GitHub username.
 
 ## Verify Everything
 
@@ -119,8 +119,8 @@ git remote -v
 
 Should show:
 ```
-origin  https://github.com/yourusername/ollama-chat-app.git (fetch)
-origin  https://github.com/yourusername/ollama-chat-app.git (push)
+origin  https://github.com/SoloFFFF77/ollama-chat-app.git (fetch)
+origin  https://github.com/SoloFFFF77/ollama-chat-app.git (push)
 ```
 
 ### Check Commit History
@@ -138,12 +138,12 @@ git status
 Once pushed, users can install with:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/yourusername/ollama-chat-app/main/quick-install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/SoloFFFF77/ollama-chat-app/main/quick-install.sh | bash
 ```
 
 Or clone directly:
 ```bash
-git clone https://github.com/yourusername/ollama-chat-app.git
+git clone https://github.com/SoloFFFF77/ollama-chat-app.git
 cd ollama-chat-app
 chmod +x install-termux.sh
 ./install-termux.sh
@@ -154,7 +154,7 @@ chmod +x install-termux.sh
 ### Authentication Error
 ```bash
 # Use personal access token for HTTPS
-git remote set-url origin https://yourusername:your_token@github.com/yourusername/ollama-chat-app.git
+git remote set-url origin https://SoloFFFF77:your_token@github.com/SoloFFFF77/ollama-chat-app.git
 ```
 
 ### File Permissions Lost
@@ -186,7 +186,7 @@ Deploy README as a website:
 1. Go to repository Settings
 2. Scroll to "GitHub Pages"
 3. Select "main" branch
-4. Your README will be at: `https://yourusername.github.io/ollama-chat-app`
+4. Your README will be at: `https://SoloFFFF77.github.io/ollama-chat-app`
 
 ## Adding Contributors
 

@@ -14,7 +14,7 @@ This package contains **everything** to run an offline AI chat app on:
 ### Path 1: Run on Termux/Android (Recommended)
 ```bash
 # One command - that's it!
-curl -fsSL https://raw.githubusercontent.com/yourusername/ollama-chat-app/main/quick-install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/SoloFFFF77/ollama-chat-app/main/quick-install.sh | bash
 ```
 See: **QUICK_START.md** for details
 
@@ -63,7 +63,7 @@ Standalone Guides:
 ### For Termux (What You Probably Want)
 ```bash
 # Copy-paste this one line:
-curl -fsSL https://raw.githubusercontent.com/yourusername/ollama-chat-app/main/quick-install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/SoloFFFF77/ollama-chat-app/main/quick-install.sh | bash
 
 # Wait for installation (~5-10 min depending on internet)
 # Then start using:
@@ -84,7 +84,7 @@ curl -fsSL https://raw.githubusercontent.com/yourusername/ollama-chat-app/main/q
 # 1. Get Ollama: https://ollama.ai
 
 # 2. Clone this project
-git clone https://github.com/yourusername/ollama-chat-app.git
+git clone https://github.com/SoloFFFF77/ollama-chat-app.git
 cd ollama-chat-app
 
 # 3. Install & run
@@ -281,10 +281,10 @@ Step 4: Start chatting! 🤖         (infinite fun)
 
 ```bash
 # Installation (Termux)
-curl -fsSL https://raw.githubusercontent.com/yourusername/ollama-chat-app/main/quick-install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/SoloFFFF77/ollama-chat-app/main/quick-install.sh | bash
 
 # Manual installation
-git clone https://github.com/yourusername/ollama-chat-app.git
+git clone https://github.com/SoloFFFF77/ollama-chat-app.git
 cd ollama-chat-app
 chmod +x install-termux.sh
 ./install-termux.sh

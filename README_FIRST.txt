@@ -81,7 +81,7 @@ It takes 2 minutes. Do it now!
 
 If you want to install on Termux RIGHT NOW and figure it out:
 
-  curl -fsSL https://raw.githubusercontent.com/yourusername/ollama-chat-app/main/quick-install.sh | bash
+  curl -fsSL https://raw.githubusercontent.com/SoloFFFF77/ollama-chat-app/main/quick-install.sh | bash
 
 Wait 10-15 minutes, then:
 
@@ -91,7 +91,7 @@ Then open your browser to: http://localhost:3000
 
 That's it. The script handles everything.
 
-⚠️  NOTE: Replace "yourusername" with your actual GitHub username after you
+⚠️  NOTE: Replace "SoloFFFF77" with your actual GitHub username after you
 push the project there. For now, this command won't work until then.
 
 ═══════════════════════════════════════════════════════════════════════════

@@ -20,7 +20,7 @@ A modern, responsive, and completely offline AI chat application designed to run
 If you're on an Android device using Termux, run the following command to install everything automatically:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/yourusername/ollama-chat-app/main/install-termux.sh | bash
+curl -fsSL https://raw.githubusercontent.com/SoloFFFF77/ollama-chat-app/main/install-termux.sh | bash
 ```
 
 After installation, start the services:
@@ -36,7 +36,7 @@ Then open your browser and navigate to: `http://localhost:3000`
 1. **Install Ollama:** Download and install from [ollama.ai](https://ollama.ai).
 2. **Clone the Repository:**
    ```bash
-   git clone https://github.com/yourusername/ollama-chat-app.git
+   git clone https://github.com/SoloFFFF77/ollama-chat-app.git
    cd ollama-chat-app
    ```
 3. **Install Dependencies:**

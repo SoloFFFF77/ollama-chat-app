@@ -49,7 +49,7 @@ http://localhost:3000
 
 ### One-Command Install (Easiest)
 ```bash
-curl -fsSL https://raw.githubusercontent.com/yourusername/ollama-chat-app/main/quick-install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/SoloFFFF77/ollama-chat-app/main/quick-install.sh | bash
 ```
 
 ### Manual Install
@@ -57,7 +57,7 @@ curl -fsSL https://raw.githubusercontent.com/yourusername/ollama-chat-app/main/q
 # Open Termux and run:
 pkg update -y
 pkg install nodejs
-git clone https://github.com/yourusername/ollama-chat-app.git
+git clone https://github.com/SoloFFFF77/ollama-chat-app.git
 cd ollama-chat-app
 npm install
 

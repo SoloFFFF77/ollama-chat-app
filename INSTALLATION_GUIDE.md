@@ -53,7 +53,7 @@ You now have a **complete, production-ready offline AI chat application** that:
 
 ```bash
 # Step 1: Open Termux and paste this one line
-curl -fsSL https://raw.githubusercontent.com/yourusername/ollama-chat-app/main/quick-install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/SoloFFFF77/ollama-chat-app/main/quick-install.sh | bash
 
 # Step 2: Wait for installation (~10 minutes)
 # The script will:
@@ -94,7 +94,7 @@ cd ~/ollama-chat-app
 #   Linux: curl -fsSL https://ollama.ai/install.sh | sh
 
 # 2. Clone the project
-git clone https://github.com/yourusername/ollama-chat-app.git
+git clone https://github.com/SoloFFFF77/ollama-chat-app.git
 cd ollama-chat-app
 
 # 3. Install dependencies
@@ -145,7 +145,7 @@ git branch -M main
 git push -u origin main
 
 # 4. Update installation URLs in README
-# Replace 'yourusername' with your actual username
+# Replace 'SoloFFFF77' with your actual username
 # Update quick-install.sh REPO_URL variable
 
 # 5. Share the link!
@@ -459,7 +459,7 @@ ifconfig
 ssh user@server.ip
 
 # 2. Clone repository
-git clone https://github.com/yourusername/ollama-chat-app.git
+git clone https://github.com/SoloFFFF77/ollama-chat-app.git
 cd ollama-chat-app
 
 # 3. Install dependencies
@@ -575,7 +575,7 @@ curl http://localhost:3000/api/download-chat > backup.json
 Before going live:
 
 ### Code
-- [ ] Update GitHub URLs (yourusername)
+- [ ] Update GitHub URLs (SoloFFFF77)
 - [ ] Test on target platform
 - [ ] Verify all features work
 - [ ] Check error handling
@@ -709,7 +709,7 @@ Before you start, confirm:
 **Happy building!** 🤖💬
 
 For questions or issues, check the relevant guide or visit:
-- Project: https://github.com/yourusername/ollama-chat-app
+- Project: https://github.com/SoloFFFF77/ollama-chat-app
 - Ollama: https://ollama.ai
 - Support: Check guide troubleshooting sections
 
