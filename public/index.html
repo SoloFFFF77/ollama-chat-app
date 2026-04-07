@@ -29,7 +29,7 @@
 <body class="font-sans h-screen overflow-hidden flex">
 
     <!-- Sidebar (History & Models) -->
-    <aside class="sidebar w-72 hidden md:flex flex-col border-r border-slate-700">
+    <aside id="sidebar" class="sidebar fixed inset-y-0 left-0 w-72 z-50 transform -translate-x-full md:translate-x-0 md:relative md:flex flex-col border-r border-slate-700 transition-transform duration-300 ease-in-out">
         <div class="p-6 border-b border-slate-700">
             <h1 class="text-xl font-bold text-blue-400 flex items-center gap-2">
                 <i class="fas fa-bolt"></i> Ollama Ultra-Pro
@@ -57,7 +57,7 @@
         <!-- Header -->
         <header class="h-16 flex items-center justify-between px-6 border-b border-slate-700 glass z-10">
             <div class="flex items-center gap-4">
-                <button class="md:hidden text-slate-400" id="mobile-menu-btn"><i class="fas fa-bars"></i></button>
+                <button class="md:hidden text-slate-400 p-2" id="mobile-menu-btn"><i class="fas fa-bars text-xl"></i></button>
                 <div class="flex flex-col">
                     <span class="text-sm font-semibold" id="current-model-name">Loading model...</span>
                     <span class="text-[10px] text-green-400 flex items-center gap-1">
@@ -183,6 +183,21 @@
         const imageUpload = document.getElementById('image-upload');
         const imagePreviewContainer = document.getElementById('image-preview-container');
         const micBtn = document.getElementById('mic-btn');
+        const sidebar = document.getElementById('sidebar');
+        const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+
+        // Mobile Sidebar Toggle
+        mobileMenuBtn.onclick = (e) => {
+            e.stopPropagation();
+            sidebar.classList.toggle('-translate-x-full');
+        };
+
+        // Close sidebar when clicking outside on mobile
+        document.addEventListener('click', (e) => {
+            if (window.innerWidth < 768 && !sidebar.contains(e.target) && !mobileMenuBtn.contains(e.target)) {
+                sidebar.classList.add('-translate-x-full');
+            }
+        });
 
         let selectedImages = [];
         let chatContext = null;

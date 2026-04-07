@@ -82,21 +82,23 @@ while true; do
     show_header
     echo -e "${YELLOW}--- MAIN MENU ---${NC}"
     echo -e "${GREEN}1)${NC} Start All Services (Ollama + App)"
-    echo -e "${GREEN}2)${NC} Stop All Services"
-    echo -e "${GREEN}3)${NC} Install/Pull New Model"
-    echo -e "${GREEN}4)${NC} Check Installed Models"
-    echo -e "${GREEN}5)${NC} Run Full Installer (Termux Setup)"
-    echo -e "${RED}6)${NC} Exit"
+    echo -e "${GREEN}2)${NC} Start in Background (Keep Running)"
+    echo -e "${GREEN}3)${NC} Stop All Services"
+    echo -e "${GREEN}4)${NC} Install/Pull New Model"
+    echo -e "${GREEN}5)${NC} Check Installed Models"
+    echo -e "${GREEN}6)${NC} Run Full Installer (Termux Setup)"
+    echo -e "${RED}7)${NC} Exit"
     echo ""
     read -p "Enter your choice [1-6]: " choice
 
     case $choice in
         1) start_all ;;
-        2) stop_all ;;
-        3) install_model ;;
-        4) ollama list; echo -e "${YELLOW}Press Enter to return.${NC}"; read ;;
-        5) bash install-termux.sh; echo -e "${YELLOW}Press Enter to return.${NC}"; read ;;
-        6) stop_all; exit 0 ;;
+        2) bash background-run.sh; echo -e "${YELLOW}Press Enter to return.${NC}"; read ;;
+        3) stop_all ;;
+        4) install_model ;;
+        5) ollama list; echo -e "${YELLOW}Press Enter to return.${NC}"; read ;;
+        6) bash install-termux.sh; echo -e "${YELLOW}Press Enter to return.${NC}"; read ;;
+        7) stop_all; exit 0 ;;
         *) echo -e "${RED}Invalid choice.${NC}"; sleep 1 ;;
     esac
 done
