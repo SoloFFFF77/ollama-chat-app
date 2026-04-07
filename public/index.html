@@ -3,105 +3,140 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ollama Chat App</title>
+    <title>Ollama Pro Chat</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        body { background-color: #1a1a1a; color: #e0e0e0; }
-        .chat-container { height: calc(100vh - 220px); }
-        .message-bubble { max-width: 80%; border-radius: 12px; padding: 12px 16px; margin-bottom: 12px; }
-        .user-message { background-color: #3b82f6; align-self: flex-end; }
-        .ai-message { background-color: #333; align-self: flex-start; }
+        :root { --bg-color: #0f172a; --sidebar-color: #1e293b; --accent-color: #3b82f6; --text-color: #f8fafc; }
+        body { background-color: var(--bg-color); color: var(--text-color); }
+        .sidebar { background-color: var(--sidebar-color); }
+        .chat-area { flex: 1; display: flex; flex-direction: column; position: relative; }
+        .message-bubble { max-width: 85%; border-radius: 1.25rem; padding: 1rem 1.25rem; margin-bottom: 1.5rem; line-height: 1.6; }
+        .user-message { background-color: var(--accent-color); align-self: flex-end; border-bottom-right-radius: 0.25rem; }
+        .ai-message { background-color: #334155; align-self: flex-start; border-bottom-left-radius: 0.25rem; }
+        .typing-indicator::after { content: '...'; animation: typing 1.5s infinite; }
+        @keyframes typing { 0% { content: '.'; } 33% { content: '..'; } 66% { content: '...'; } }
         ::-webkit-scrollbar { width: 6px; }
-        ::-webkit-scrollbar-thumb { background: #444; border-radius: 3px; }
-        .progress-bar { transition: width 0.3s ease; }
-        .preview-img { max-height: 80px; border-radius: 8px; border: 1px solid #444; }
+        ::-webkit-scrollbar-thumb { background: #475569; border-radius: 3px; }
+        .mic-active { color: #ef4444; animation: pulse 1.5s infinite; }
+        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
+        .preview-img { max-height: 100px; border-radius: 12px; border: 2px solid #334155; }
+        .glass { background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(10px); border-top: 1px solid rgba(255,255,255,0.1); }
     </style>
 </head>
-<body class="font-sans">
-    <div class="max-w-4xl mx-auto p-4 flex flex-col h-screen">
-        <header class="flex justify-between items-center mb-4">
-            <h1 class="text-2xl font-bold text-blue-400">🤖 Ollama Chat</h1>
+<body class="font-sans h-screen overflow-hidden flex">
+
+    <!-- Sidebar (History & Models) -->
+    <aside class="sidebar w-72 hidden md:flex flex-col border-r border-slate-700">
+        <div class="p-6 border-b border-slate-700">
+            <h1 class="text-xl font-bold text-blue-400 flex items-center gap-2">
+                <i class="fas fa-robot"></i> Ollama Pro
+            </h1>
+        </div>
+        
+        <div class="flex-1 overflow-y-auto p-4 space-y-2" id="history-list">
+            <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2 px-2">Recent Chats</p>
+            <!-- History items go here -->
+        </div>
+
+        <div class="p-4 border-t border-slate-700 space-y-3">
+            <button id="open-download-modal" class="w-full flex items-center justify-center gap-2 py-2 bg-blue-600 hover:bg-blue-500 rounded-lg text-sm font-medium transition">
+                <i class="fas fa-download"></i> Download Models
+            </button>
+            <div class="text-xs text-slate-500 text-center">v2.0.0 • Pro Edition</div>
+        </div>
+    </aside>
+
+    <!-- Main Chat Content -->
+    <main class="chat-area">
+        <!-- Header -->
+        <header class="h-16 flex items-center justify-between px-6 border-b border-slate-700 glass z-10">
+            <div class="flex items-center gap-4">
+                <button class="md:hidden text-slate-400"><i class="fas fa-bars"></i></button>
+                <div class="flex flex-col">
+                    <span class="text-sm font-semibold" id="current-model-name">Loading model...</span>
+                    <span class="text-[10px] text-green-400 flex items-center gap-1">
+                        <span class="w-1.5 h-1.5 bg-green-400 rounded-full"></span> Connected to Ollama
+                    </span>
+                </div>
+            </div>
             <div class="flex items-center gap-3">
-                <select id="model-select" class="bg-zinc-800 text-sm border border-zinc-700 rounded-lg p-2 focus:outline-none">
-                    <option value="">Loading models...</option>
-                </select>
-                <button id="refresh-models" title="Refresh Models" class="p-2 hover:bg-zinc-800 rounded-full transition">🔄</button>
-                <button id="open-download-modal" title="Download Models" class="p-2 bg-blue-600 hover:bg-blue-500 rounded-full transition text-white">📥</button>
+                <select id="model-select" class="bg-slate-800 text-xs border border-slate-700 rounded-md p-1.5 focus:outline-none focus:ring-1 focus:ring-blue-500"></select>
+                <button id="refresh-models" class="p-2 text-slate-400 hover:text-white transition"><i class="fas fa-sync-alt"></i></button>
             </div>
         </header>
 
-        <!-- Download Modal -->
-        <div id="download-modal" class="fixed inset-0 bg-black/80 hidden items-center justify-center z-50 p-4">
-            <div class="bg-zinc-900 border border-zinc-800 rounded-2xl w-full max-w-md p-6">
-                <div class="flex justify-between items-center mb-4">
-                    <h2 class="text-xl font-bold">Download Small Models</h2>
-                    <button id="close-modal" class="text-zinc-500 hover:text-white">✕</button>
-                </div>
-                <p class="text-sm text-zinc-400 mb-4">Perfect for Termux & Mobile (Fast & Lightweight)</p>
-                
-                <div class="space-y-3 mb-6">
-                    <div class="flex items-center justify-between p-3 bg-zinc-800 rounded-xl">
-                        <div>
-                            <div class="font-bold">Phi-3 Mini (3.8B)</div>
-                            <div class="text-xs text-zinc-500">~2.3GB - High Quality</div>
-                        </div>
-                        <button onclick="downloadModel('phi3')" class="px-4 py-1.5 bg-zinc-700 hover:bg-blue-600 rounded-lg text-sm transition dl-btn" data-model="phi3">Download</button>
-                    </div>
-                    <div class="flex items-center justify-between p-3 bg-zinc-800 rounded-xl">
-                        <div>
-                            <div class="font-bold">TinyLlama (1.1B)</div>
-                            <div class="text-xs text-zinc-500">~637MB - Ultra Fast</div>
-                        </div>
-                        <button onclick="downloadModel('tinyllama')" class="px-4 py-1.5 bg-zinc-700 hover:bg-blue-600 rounded-lg text-sm transition dl-btn" data-model="tinyllama">Download</button>
-                    </div>
-                    <div class="flex items-center justify-between p-3 bg-zinc-800 rounded-xl">
-                        <div>
-                            <div class="font-bold">LLaVA (Multimodal)</div>
-                            <div class="text-xs text-zinc-500">~4.7GB - Supports Images</div>
-                        </div>
-                        <button onclick="downloadModel('llava')" class="px-4 py-1.5 bg-zinc-700 hover:bg-blue-600 rounded-lg text-sm transition dl-btn" data-model="llava">Download</button>
-                    </div>
-                </div>
-
-                <div id="download-status" class="hidden">
-                    <div class="flex justify-between text-xs mb-1">
-                        <span id="status-text">Downloading...</span>
-                        <span id="status-percent">0%</span>
-                    </div>
-                    <div class="w-full bg-zinc-800 rounded-full h-2">
-                        <div id="status-bar" class="bg-blue-500 h-2 rounded-full progress-bar" style="width: 0%"></div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div id="chat-box" class="chat-container flex flex-col overflow-y-auto p-4 border border-zinc-800 rounded-xl bg-zinc-900/50 mb-4">
+        <!-- Chat Box -->
+        <div id="chat-box" class="flex-1 overflow-y-auto p-6 space-y-4">
             <div class="ai-message message-bubble">
-                Welcome! Make sure Ollama is running. Use the 📥 icon to download small models. To analyze images, select a multimodal model like <b>LLaVA</b>.
+                <p class="font-bold mb-1">Welcome to Ollama Pro Chat!</p>
+                <p>How can I assist you today? You can type your request, upload images for analysis, or even use your microphone to speak to me.</p>
             </div>
         </div>
 
-        <div id="image-preview-container" class="flex gap-2 mb-2 hidden">
-            <!-- Image previews will appear here -->
-        </div>
+        <!-- Input Area -->
+        <div class="p-4 glass">
+            <div class="max-w-4xl mx-auto">
+                <div id="image-preview-container" class="flex gap-2 mb-3 hidden"></div>
+                
+                <div class="relative flex items-end gap-2 bg-slate-800 border border-slate-700 rounded-2xl p-2 focus-within:ring-2 focus-within:ring-blue-500/50 transition-all shadow-xl">
+                    <label for="image-upload" class="p-3 text-slate-400 hover:text-blue-400 cursor-pointer transition">
+                        <i class="fas fa-image text-xl"></i>
+                        <input type="file" id="image-upload" accept="image/*" multiple class="hidden">
+                    </label>
+                    
+                    <button id="mic-btn" class="p-3 text-slate-400 hover:text-red-400 transition" title="Voice Input">
+                        <i class="fas fa-microphone text-xl"></i>
+                    </button>
 
-        <div class="relative">
-            <div class="flex gap-2">
-                <label for="image-upload" class="bg-zinc-800 hover:bg-zinc-700 p-4 rounded-xl cursor-pointer transition border border-zinc-700">
-                    🖼️
-                    <input type="file" id="image-upload" accept="image/*" multiple class="hidden">
-                </label>
-                <textarea id="user-input" rows="3" placeholder="Type your message..." 
-                    class="flex-1 bg-zinc-800 border border-zinc-700 rounded-xl p-4 pr-24 focus:ring-2 focus:ring-blue-500 focus:outline-none resize-none"></textarea>
-                <button id="send-btn" class="absolute right-3 bottom-3 bg-blue-600 hover:bg-blue-500 text-white font-bold py-2 px-6 rounded-lg transition">
-                    Send
-                </button>
+                    <textarea id="user-input" rows="1" placeholder="Ask anything..." 
+                        class="flex-1 bg-transparent border-none py-3 px-2 focus:ring-0 text-slate-100 resize-none max-h-40 outline-none"></textarea>
+                    
+                    <button id="send-btn" class="bg-blue-600 hover:bg-blue-500 text-white p-3 rounded-xl transition shadow-lg disabled:opacity-50 disabled:cursor-not-allowed">
+                        <i class="fas fa-paper-plane"></i>
+                    </button>
+                </div>
+                <p class="text-[10px] text-slate-500 mt-2 text-center">
+                    Pro Tip: Press Shift + Enter for new line. Using multimodal models for images is recommended.
+                </p>
             </div>
         </div>
-        
-        <footer class="mt-4 text-center text-xs text-zinc-500">
-            Powered by Ollama • 100% Offline • Privacy First
-        </footer>
+    </main>
+
+    <!-- Download Modal -->
+    <div id="download-modal" class="fixed inset-0 bg-black/80 hidden items-center justify-center z-50 p-4">
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-md p-6 shadow-2xl">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-xl font-bold flex items-center gap-2"><i class="fas fa-cloud-download-alt text-blue-400"></i> Model Library</h2>
+                <button id="close-modal" class="text-slate-500 hover:text-white"><i class="fas fa-times"></i></button>
+            </div>
+            
+            <div class="space-y-4 mb-6" id="model-download-list">
+                <!-- Models will be listed here -->
+                <div class="p-4 bg-slate-800 rounded-xl flex items-center justify-between border border-slate-700">
+                    <div><div class="font-bold">TinyLlama</div><div class="text-[10px] text-slate-500">637MB • Super Fast</div></div>
+                    <button onclick="downloadModel('tinyllama')" class="px-4 py-2 bg-slate-700 hover:bg-blue-600 rounded-lg text-xs font-bold transition dl-btn" data-model="tinyllama">Get</button>
+                </div>
+                <div class="p-4 bg-slate-800 rounded-xl flex items-center justify-between border border-slate-700">
+                    <div><div class="font-bold">Phi-3 Mini</div><div class="text-[10px] text-slate-500">2.3GB • High Quality</div></div>
+                    <button onclick="downloadModel('phi3')" class="px-4 py-2 bg-slate-700 hover:bg-blue-600 rounded-lg text-xs font-bold transition dl-btn" data-model="phi3">Get</button>
+                </div>
+                <div class="p-4 bg-slate-800 rounded-xl flex items-center justify-between border border-slate-700">
+                    <div><div class="font-bold">LLaVA</div><div class="text-[10px] text-slate-500">4.7GB • Supports Images</div></div>
+                    <button onclick="downloadModel('llava')" class="px-4 py-2 bg-slate-700 hover:bg-blue-600 rounded-lg text-xs font-bold transition dl-btn" data-model="llava">Get</button>
+                </div>
+            </div>
+
+            <div id="download-status" class="hidden">
+                <div class="flex justify-between text-[10px] mb-2">
+                    <span id="status-text" class="text-blue-400 font-medium italic">Preparing...</span>
+                    <span id="status-percent">0%</span>
+                </div>
+                <div class="w-full bg-slate-800 rounded-full h-1.5 overflow-hidden">
+                    <div id="status-bar" class="bg-blue-500 h-full progress-bar" style="width: 0%"></div>
+                </div>
+            </div>
+        </div>
     </div>
 
     <script>
@@ -109,6 +144,7 @@
         const userInput = document.getElementById('user-input');
         const sendBtn = document.getElementById('send-btn');
         const modelSelect = document.getElementById('model-select');
+        const currentModelName = document.getElementById('current-model-name');
         const refreshBtn = document.getElementById('refresh-models');
         const modal = document.getElementById('download-modal');
         const openModalBtn = document.getElementById('open-download-modal');
@@ -119,9 +155,18 @@
         const statusPercent = document.getElementById('status-percent');
         const imageUpload = document.getElementById('image-upload');
         const imagePreviewContainer = document.getElementById('image-preview-container');
+        const micBtn = document.getElementById('mic-btn');
 
         let selectedImages = [];
+        let chatContext = null;
 
+        // Auto-resize textarea
+        userInput.addEventListener('input', () => {
+            userInput.style.height = 'auto';
+            userInput.style.height = userInput.scrollHeight + 'px';
+        });
+
+        // Image handling
         imageUpload.addEventListener('change', (e) => {
             const files = Array.from(e.target.files);
             files.forEach(file => {
@@ -130,15 +175,52 @@
                     const base64 = ev.target.result.split(',')[1];
                     selectedImages.push(base64);
                     
-                    const img = document.createElement('img');
-                    img.src = ev.target.result;
-                    img.className = 'preview-img';
-                    imagePreviewContainer.appendChild(img);
+                    const div = document.createElement('div');
+                    div.className = 'relative group';
+                    div.innerHTML = `
+                        <img src="${ev.target.result}" class="preview-img">
+                        <button class="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-[10px] opacity-0 group-hover:opacity-100 transition">✕</button>
+                    `;
+                    div.onclick = () => {
+                        selectedImages = selectedImages.filter(img => img !== base64);
+                        div.remove();
+                        if (selectedImages.length === 0) imagePreviewContainer.classList.add('hidden');
+                    };
+                    imagePreviewContainer.appendChild(div);
                     imagePreviewContainer.classList.remove('hidden');
                 };
                 reader.readAsDataURL(file);
             });
         });
+
+        // Voice Input (Web Speech API)
+        if ('webkitSpeechRecognition' in window) {
+            const recognition = new webkitSpeechRecognition();
+            recognition.continuous = false;
+            recognition.interimResults = false;
+
+            micBtn.onclick = () => {
+                if (micBtn.classList.contains('mic-active')) {
+                    recognition.stop();
+                } else {
+                    recognition.start();
+                    micBtn.classList.add('mic-active');
+                }
+            };
+
+            recognition.onresult = (event) => {
+                const transcript = event.results[0][0].transcript;
+                userInput.value += transcript;
+                userInput.dispatchEvent(new Event('input'));
+                micBtn.classList.remove('mic-active');
+            };
+
+            recognition.onerror = () => micBtn.classList.remove('mic-active');
+            recognition.onend = () => micBtn.classList.remove('mic-active');
+        } else {
+            micBtn.title = "Speech recognition not supported in this browser";
+            micBtn.style.opacity = "0.3";
+        }
 
         async function fetchModels() {
             try {
@@ -146,21 +228,22 @@
                 const data = await res.json();
                 if (data.models && data.models.length > 0) {
                     modelSelect.innerHTML = data.models.map(m => `<option value="${m.name}">${m.name}</option>`).join('');
+                    currentModelName.textContent = modelSelect.value;
                 } else {
                     modelSelect.innerHTML = '<option value="">No models found</option>';
+                    currentModelName.textContent = "No model selected";
                 }
             } catch (err) {
-                modelSelect.innerHTML = '<option value="">Error loading models</option>';
+                modelSelect.innerHTML = '<option value="">Connection error</option>';
             }
         }
 
+        modelSelect.onchange = () => currentModelName.textContent = modelSelect.value;
+
         async function downloadModel(modelName) {
-            const btn = document.querySelector(`.dl-btn[data-model="${modelName}"]`);
             const allBtns = document.querySelectorAll('.dl-btn');
-            
             allBtns.forEach(b => b.disabled = true);
             statusDiv.classList.remove('hidden');
-            statusText.textContent = `Downloading ${modelName}...`;
             
             try {
                 const response = await fetch('/api/pull-model', {
@@ -185,10 +268,10 @@
                                 const percent = Math.round((data.completed / data.total) * 100);
                                 statusBar.style.width = `${percent}%`;
                                 statusPercent.textContent = `${percent}%`;
+                                statusText.textContent = `Downloading ${modelName}...`;
                             } else if (data.status === 'success') {
-                                statusText.textContent = "Download complete!";
+                                statusText.textContent = "Installation complete!";
                                 statusBar.style.width = "100%";
-                                statusPercent.textContent = "100%";
                                 await fetchModels();
                                 setTimeout(() => {
                                     modal.classList.add('hidden');
@@ -202,7 +285,7 @@
                     }
                 }
             } catch (err) {
-                statusText.textContent = "Error downloading model.";
+                statusText.textContent = "Error during download.";
                 allBtns.forEach(b => b.disabled = false);
             }
         }
@@ -213,60 +296,79 @@
             
             if (imgs.length > 0) {
                 const imgContainer = document.createElement('div');
-                imgContainer.className = 'flex gap-2 mb-2 flex-wrap';
+                imgContainer.className = 'flex gap-2 mb-3 flex-wrap';
                 imgs.forEach(base64 => {
                     const img = document.createElement('img');
                     img.src = `data:image/png;base64,${base64}`;
-                    img.className = 'preview-img';
+                    img.className = 'max-w-full h-auto rounded-lg shadow-md';
                     imgContainer.appendChild(img);
                 });
                 div.appendChild(imgContainer);
             }
 
-            const textSpan = document.createElement('span');
-            textSpan.textContent = text;
-            div.appendChild(textSpan);
+            const textContainer = document.createElement('div');
+            textContainer.className = 'whitespace-pre-wrap';
+            textContainer.textContent = text;
+            div.appendChild(textContainer);
             
             chatBox.appendChild(div);
             chatBox.scrollTop = chatBox.scrollHeight;
-            return textSpan;
+            return textContainer;
         }
 
         async function sendMessage() {
             const text = userInput.value.trim();
             const model = modelSelect.value;
-            if (!text || !model) return;
+            if ((!text && selectedImages.length === 0) || !model) return;
 
+            sendBtn.disabled = true;
             appendMessage(text, 'user', selectedImages);
-            const currentImages = [...selectedImages];
             
-            // Clear inputs
+            const currentImages = [...selectedImages];
             userInput.value = '';
+            userInput.style.height = 'auto';
             selectedImages = [];
             imagePreviewContainer.innerHTML = '';
             imagePreviewContainer.classList.add('hidden');
             
             const aiMsgSpan = appendMessage('', 'ai');
+            aiMsgSpan.classList.add('typing-indicator');
 
             try {
                 const response = await fetch('/api/chat', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ model, prompt: text, images: currentImages })
+                    body: JSON.stringify({ model, prompt: text, images: currentImages, context: chatContext })
                 });
 
                 const reader = response.body.getReader();
                 const decoder = new TextDecoder();
+                aiMsgSpan.classList.remove('typing-indicator');
 
                 while (true) {
                     const { done, value } = await reader.read();
                     if (done) break;
-                    aiMsgSpan.textContent += decoder.decode(value);
-                    chatBox.scrollTop = chatBox.scrollHeight;
+                    
+                    const chunks = decoder.decode(value).split('\n\n');
+                    for (const chunk of chunks) {
+                        if (!chunk.startsWith('data: ')) continue;
+                        try {
+                            const data = JSON.parse(chunk.replace('data: ', ''));
+                            if (data.response) {
+                                aiMsgSpan.textContent += data.response;
+                                chatBox.scrollTop = chatBox.scrollHeight;
+                            }
+                            if (data.done) {
+                                chatContext = data.context;
+                            }
+                        } catch (e) {}
+                    }
                 }
             } catch (err) {
-                aiMsgSpan.textContent = "Error: Could not connect to the server.";
+                aiMsgSpan.textContent = "Error: Connection lost.";
                 aiMsgSpan.classList.add('text-red-400');
+            } finally {
+                sendBtn.disabled = false;
             }
         }
 
@@ -278,8 +380,8 @@
             }
         });
         refreshBtn.addEventListener('click', fetchModels);
-        openModalBtn.addEventListener('click', () => modal.classList.replace('hidden', 'flex'));
-        closeModalBtn.addEventListener('click', () => modal.classList.replace('flex', 'hidden'));
+        openModalBtn.addEventListener('click', () => modal.classList.remove('hidden'));
+        closeModalBtn.addEventListener('click', () => modal.classList.add('hidden'));
         
         fetchModels();
     </script>

@@ -8,28 +8,41 @@ const PORT = process.env.PORT || 3000;
 const OLLAMA_URL = 'http://localhost:11434/api/generate';
 
 app.use(cors());
-app.use(express.json());
+app.use(express.json({ limit: '50mb' }));
 app.use(express.static(path.join(__dirname, 'public')));
 
+// Standard chat endpoint with optimized streaming
 app.post('/api/chat', async (req, res) => {
-    const { model, prompt, images } = req.body;
+    const { model, prompt, images, context } = req.body;
 
     try {
         const payload = {
             model: model || 'mistral',
             prompt: prompt,
-            stream: true
+            stream: true,
+            options: {
+                num_predict: 1024,
+                temperature: 0.7,
+                top_p: 0.9,
+            }
         };
 
-        // Add images if present (for multimodal models like LLaVA)
         if (images && images.length > 0) {
             payload.images = images;
         }
+        
+        if (context) {
+            payload.context = context;
+        }
 
-        const response = await axios.post(OLLAMA_URL, payload, { responseType: 'stream' });
+        const response = await axios.post(OLLAMA_URL, payload, { 
+            responseType: 'stream',
+            timeout: 0 // No timeout for long generations
+        });
 
-        res.setHeader('Content-Type', 'text/plain; charset=utf-8');
-        res.setHeader('Transfer-Encoding', 'chunked');
+        res.setHeader('Content-Type', 'text/event-stream');
+        res.setHeader('Cache-Control', 'no-cache');
+        res.setHeader('Connection', 'keep-alive');
 
         response.data.on('data', (chunk) => {
             const lines = chunk.toString().split('\n');
@@ -37,9 +50,8 @@ app.post('/api/chat', async (req, res) => {
                 if (!line.trim()) continue;
                 try {
                     const json = JSON.parse(line);
-                    if (json.response) {
-                        res.write(json.response);
-                    }
+                    // Send raw JSON for the frontend to handle context and status
+                    res.write(`data: ${JSON.stringify(json)}\n\n`);
                     if (json.done) {
                         res.end();
                     }
@@ -51,7 +63,7 @@ app.post('/api/chat', async (req, res) => {
 
         response.data.on('error', (err) => {
             console.error('Ollama stream error:', err);
-            res.status(500).send('Error communicating with Ollama');
+            res.status(500).end();
         });
 
     } catch (error) {
@@ -77,9 +89,7 @@ app.post('/api/pull-model', async (req, res) => {
             stream: true
         }, { responseType: 'stream' });
 
-        res.setHeader('Content-Type', 'text/plain; charset=utf-8');
-        res.setHeader('Transfer-Encoding', 'chunked');
-
+        res.setHeader('Content-Type', 'text/event-stream');
         response.data.pipe(res);
     } catch (error) {
         console.error('Error pulling model:', error.message);
@@ -88,5 +98,5 @@ app.post('/api/pull-model', async (req, res) => {
 });
 
 app.listen(PORT, () => {
-    console.log(`Server running at http://localhost:${PORT}`);
+    console.log(`🚀 Pro Chat Server running at http://localhost:${PORT}`);
 });
