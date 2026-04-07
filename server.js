@@ -12,14 +12,21 @@ app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
 app.post('/api/chat', async (req, res) => {
-    const { model, prompt } = req.body;
+    const { model, prompt, images } = req.body;
 
     try {
-        const response = await axios.post(OLLAMA_URL, {
+        const payload = {
             model: model || 'mistral',
             prompt: prompt,
             stream: true
-        }, { responseType: 'stream' });
+        };
+
+        // Add images if present (for multimodal models like LLaVA)
+        if (images && images.length > 0) {
+            payload.images = images;
+        }
+
+        const response = await axios.post(OLLAMA_URL, payload, { responseType: 'stream' });
 
         res.setHeader('Content-Type', 'text/plain; charset=utf-8');
         res.setHeader('Transfer-Encoding', 'chunked');
