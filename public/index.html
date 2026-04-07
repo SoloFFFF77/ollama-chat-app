@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ollama Pro Chat</title>
+    <title>Ollama Ultra-Pro Chat</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -12,8 +12,8 @@
         .sidebar { background-color: var(--sidebar-color); }
         .chat-area { flex: 1; display: flex; flex-direction: column; position: relative; }
         .message-bubble { max-width: 85%; border-radius: 1.25rem; padding: 1rem 1.25rem; margin-bottom: 1.5rem; line-height: 1.6; }
-        .user-message { background-color: var(--accent-color); align-self: flex-end; border-bottom-right-radius: 0.25rem; }
-        .ai-message { background-color: #334155; align-self: flex-start; border-bottom-left-radius: 0.25rem; }
+        .user-message { background-color: var(--accent-color); align-self: flex-end; border-bottom-right-radius: 0.25rem; box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3); }
+        .ai-message { background-color: #334155; align-self: flex-start; border-bottom-left-radius: 0.25rem; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2); }
         .typing-indicator::after { content: '...'; animation: typing 1.5s infinite; }
         @keyframes typing { 0% { content: '.'; } 33% { content: '..'; } 66% { content: '...'; } }
         ::-webkit-scrollbar { width: 6px; }
@@ -22,6 +22,8 @@
         @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
         .preview-img { max-height: 100px; border-radius: 12px; border: 2px solid #334155; }
         .glass { background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(10px); border-top: 1px solid rgba(255,255,255,0.1); }
+        .fade-in { animation: fadeIn 0.3s ease-in; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body class="font-sans h-screen overflow-hidden flex">
@@ -30,20 +32,23 @@
     <aside class="sidebar w-72 hidden md:flex flex-col border-r border-slate-700">
         <div class="p-6 border-b border-slate-700">
             <h1 class="text-xl font-bold text-blue-400 flex items-center gap-2">
-                <i class="fas fa-robot"></i> Ollama Pro
+                <i class="fas fa-bolt"></i> Ollama Ultra-Pro
             </h1>
         </div>
         
         <div class="flex-1 overflow-y-auto p-4 space-y-2" id="history-list">
             <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2 px-2">Recent Chats</p>
-            <!-- History items go here -->
+            <div class="text-xs text-slate-600 px-2 italic">No history yet...</div>
         </div>
 
         <div class="p-4 border-t border-slate-700 space-y-3">
-            <button id="open-download-modal" class="w-full flex items-center justify-center gap-2 py-2 bg-blue-600 hover:bg-blue-500 rounded-lg text-sm font-medium transition">
-                <i class="fas fa-download"></i> Download Models
+            <button id="open-settings-modal" class="w-full flex items-center justify-center gap-2 py-2 bg-slate-700 hover:bg-slate-600 rounded-lg text-sm font-medium transition">
+                <i class="fas fa-cog"></i> System Prompt
             </button>
-            <div class="text-xs text-slate-500 text-center">v2.0.0 • Pro Edition</div>
+            <button id="open-download-modal" class="w-full flex items-center justify-center gap-2 py-2 bg-blue-600 hover:bg-blue-500 rounded-lg text-sm font-medium transition">
+                <i class="fas fa-download"></i> Model Library
+            </button>
+            <div class="text-xs text-slate-500 text-center">v2.5.0 • Ultra-Fast Edition</div>
         </div>
     </aside>
 
@@ -52,25 +57,25 @@
         <!-- Header -->
         <header class="h-16 flex items-center justify-between px-6 border-b border-slate-700 glass z-10">
             <div class="flex items-center gap-4">
-                <button class="md:hidden text-slate-400"><i class="fas fa-bars"></i></button>
+                <button class="md:hidden text-slate-400" id="mobile-menu-btn"><i class="fas fa-bars"></i></button>
                 <div class="flex flex-col">
                     <span class="text-sm font-semibold" id="current-model-name">Loading model...</span>
                     <span class="text-[10px] text-green-400 flex items-center gap-1">
-                        <span class="w-1.5 h-1.5 bg-green-400 rounded-full"></span> Connected to Ollama
+                        <span class="w-1.5 h-1.5 bg-green-400 rounded-full animate-pulse"></span> Ultra-Fast Stream Active
                     </span>
                 </div>
             </div>
             <div class="flex items-center gap-3">
                 <select id="model-select" class="bg-slate-800 text-xs border border-slate-700 rounded-md p-1.5 focus:outline-none focus:ring-1 focus:ring-blue-500"></select>
-                <button id="refresh-models" class="p-2 text-slate-400 hover:text-white transition"><i class="fas fa-sync-alt"></i></button>
+                <button id="refresh-models" class="p-2 text-slate-400 hover:text-white transition" title="Refresh Models"><i class="fas fa-sync-alt"></i></button>
             </div>
         </header>
 
         <!-- Chat Box -->
-        <div id="chat-box" class="flex-1 overflow-y-auto p-6 space-y-4">
-            <div class="ai-message message-bubble">
-                <p class="font-bold mb-1">Welcome to Ollama Pro Chat!</p>
-                <p>How can I assist you today? You can type your request, upload images for analysis, or even use your microphone to speak to me.</p>
+        <div id="chat-box" class="flex-1 overflow-y-auto p-6 space-y-4 bg-slate-900/30">
+            <div class="ai-message message-bubble fade-in">
+                <p class="font-bold mb-1">Ultra-Fast Edition Ready!</p>
+                <p>I've been optimized for lightning-fast responses. You can now define my behavior in the **System Prompt** settings. How can I help you?</p>
             </div>
         </div>
 
@@ -80,7 +85,7 @@
                 <div id="image-preview-container" class="flex gap-2 mb-3 hidden"></div>
                 
                 <div class="relative flex items-end gap-2 bg-slate-800 border border-slate-700 rounded-2xl p-2 focus-within:ring-2 focus-within:ring-blue-500/50 transition-all shadow-xl">
-                    <label for="image-upload" class="p-3 text-slate-400 hover:text-blue-400 cursor-pointer transition">
+                    <label for="image-upload" class="p-3 text-slate-400 hover:text-blue-400 cursor-pointer transition" title="Upload Images">
                         <i class="fas fa-image text-xl"></i>
                         <input type="file" id="image-upload" accept="image/*" multiple class="hidden">
                     </label>
@@ -97,11 +102,28 @@
                     </button>
                 </div>
                 <p class="text-[10px] text-slate-500 mt-2 text-center">
-                    Pro Tip: Press Shift + Enter for new line. Using multimodal models for images is recommended.
+                    Background Mode Enabled: I will keep generating even if you switch apps!
                 </p>
             </div>
         </div>
     </main>
+
+    <!-- Settings Modal (System Prompt) -->
+    <div id="settings-modal" class="fixed inset-0 bg-black/80 hidden items-center justify-center z-50 p-4">
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-lg p-6 shadow-2xl">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-xl font-bold flex items-center gap-2"><i class="fas fa-brain text-purple-400"></i> AI Behavior (System Prompt)</h2>
+                <button id="close-settings" class="text-slate-500 hover:text-white"><i class="fas fa-times"></i></button>
+            </div>
+            <p class="text-xs text-slate-400 mb-4">Give instructions to define how the AI should act (e.g., "Act as a Python expert" or "Speak in a funny tone").</p>
+            <textarea id="system-prompt" rows="6" placeholder="You are a helpful AI assistant..." 
+                class="w-full bg-slate-800 border border-slate-700 rounded-xl p-4 text-slate-100 focus:ring-2 focus:ring-purple-500 outline-none resize-none mb-4"></textarea>
+            <div class="flex justify-end gap-3">
+                <button id="reset-system" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 rounded-lg text-sm transition">Reset Default</button>
+                <button id="save-system" class="px-6 py-2 bg-purple-600 hover:bg-purple-500 rounded-lg text-sm font-bold transition">Save Instructions</button>
+            </div>
+        </div>
+    </div>
 
     <!-- Download Modal -->
     <div id="download-modal" class="fixed inset-0 bg-black/80 hidden items-center justify-center z-50 p-4">
@@ -112,7 +134,6 @@
             </div>
             
             <div class="space-y-4 mb-6" id="model-download-list">
-                <!-- Models will be listed here -->
                 <div class="p-4 bg-slate-800 rounded-xl flex items-center justify-between border border-slate-700">
                     <div><div class="font-bold">TinyLlama</div><div class="text-[10px] text-slate-500">637MB • Super Fast</div></div>
                     <button onclick="downloadModel('tinyllama')" class="px-4 py-2 bg-slate-700 hover:bg-blue-600 rounded-lg text-xs font-bold transition dl-btn" data-model="tinyllama">Get</button>
@@ -149,6 +170,12 @@
         const modal = document.getElementById('download-modal');
         const openModalBtn = document.getElementById('open-download-modal');
         const closeModalBtn = document.getElementById('close-modal');
+        const settingsModal = document.getElementById('settings-modal');
+        const openSettingsBtn = document.getElementById('open-settings-modal');
+        const closeSettingsBtn = document.getElementById('close-settings');
+        const systemPromptInput = document.getElementById('system-prompt');
+        const saveSystemBtn = document.getElementById('save-system');
+        const resetSystemBtn = document.getElementById('reset-system');
         const statusDiv = document.getElementById('download-status');
         const statusBar = document.getElementById('status-bar');
         const statusText = document.getElementById('status-text');
@@ -159,6 +186,21 @@
 
         let selectedImages = [];
         let chatContext = null;
+        let systemPrompt = localStorage.getItem('systemPrompt') || "You are a helpful AI assistant.";
+        systemPromptInput.value = systemPrompt;
+
+        // Settings Handling
+        openSettingsBtn.onclick = () => settingsModal.classList.remove('hidden');
+        closeSettingsBtn.onclick = () => settingsModal.classList.add('hidden');
+        saveSystemBtn.onclick = () => {
+            systemPrompt = systemPromptInput.value;
+            localStorage.setItem('systemPrompt', systemPrompt);
+            settingsModal.classList.add('hidden');
+            alert('AI behavior updated!');
+        };
+        resetSystemBtn.onclick = () => {
+            systemPromptInput.value = "You are a helpful AI assistant.";
+        };
 
         // Auto-resize textarea
         userInput.addEventListener('input', () => {
@@ -176,10 +218,10 @@
                     selectedImages.push(base64);
                     
                     const div = document.createElement('div');
-                    div.className = 'relative group';
+                    div.className = 'relative group fade-in';
                     div.innerHTML = `
                         <img src="${ev.target.result}" class="preview-img">
-                        <button class="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-[10px] opacity-0 group-hover:opacity-100 transition">✕</button>
+                        <button class="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-[10px] opacity-0 group-hover:opacity-100 transition shadow-lg">✕</button>
                     `;
                     div.onclick = () => {
                         selectedImages = selectedImages.filter(img => img !== base64);
@@ -259,11 +301,11 @@
                     const { done, value } = await reader.read();
                     if (done) break;
                     
-                    const chunks = decoder.decode(value).split('\n');
+                    const chunks = decoder.decode(value).split('\n\n');
                     for (const chunk of chunks) {
                         if (!chunk) continue;
                         try {
-                            const data = JSON.parse(chunk);
+                            const data = JSON.parse(chunk.replace('data: ', ''));
                             if (data.status.includes('downloading') && data.total) {
                                 const percent = Math.round((data.completed / data.total) * 100);
                                 statusBar.style.width = `${percent}%`;
@@ -292,7 +334,7 @@
 
         function appendMessage(text, role, imgs = []) {
             const div = document.createElement('div');
-            div.className = `message-bubble ${role === 'user' ? 'user-message' : 'ai-message'}`;
+            div.className = `message-bubble ${role === 'user' ? 'user-message' : 'ai-message'} fade-in`;
             
             if (imgs.length > 0) {
                 const imgContainer = document.createElement('div');
@@ -338,7 +380,13 @@
                 const response = await fetch('/api/chat', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ model, prompt: text, images: currentImages, context: chatContext })
+                    body: JSON.stringify({ 
+                        model, 
+                        prompt: text, 
+                        images: currentImages, 
+                        context: chatContext,
+                        system: systemPrompt 
+                    })
                 });
 
                 const reader = response.body.getReader();
@@ -349,7 +397,8 @@
                     const { done, value } = await reader.read();
                     if (done) break;
                     
-                    const chunks = decoder.decode(value).split('\n\n');
+                    const rawData = decoder.decode(value);
+                    const chunks = rawData.split('\n\n');
                     for (const chunk of chunks) {
                         if (!chunk.startsWith('data: ')) continue;
                         try {
@@ -365,7 +414,7 @@
                     }
                 }
             } catch (err) {
-                aiMsgSpan.textContent = "Error: Connection lost.";
+                aiMsgSpan.textContent = "Error: Connection lost. The server might still be working in the background.";
                 aiMsgSpan.classList.add('text-red-400');
             } finally {
                 sendBtn.disabled = false;

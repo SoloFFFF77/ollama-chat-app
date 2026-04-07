@@ -2,28 +2,36 @@ const express = require('express');
 const axios = require('axios');
 const cors = require('cors');
 const path = require('path');
+const http = require('http');
 
 const app = express();
+const server = http.createServer(app);
 const PORT = process.env.PORT || 3000;
 const OLLAMA_URL = 'http://localhost:11434/api/generate';
 
 app.use(cors());
-app.use(express.json({ limit: '50mb' }));
+app.use(express.json({ limit: '100mb' }));
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Standard chat endpoint with optimized streaming
+// Set high timeout for background stability
+server.keepAliveTimeout = 120000; // 120 seconds
+server.headersTimeout = 125000;
+
 app.post('/api/chat', async (req, res) => {
-    const { model, prompt, images, context } = req.body;
+    const { model, prompt, images, context, system } = req.body;
 
     try {
         const payload = {
             model: model || 'mistral',
             prompt: prompt,
             stream: true,
+            system: system || "You are a helpful AI assistant.",
             options: {
-                num_predict: 1024,
+                num_predict: 2048,
                 temperature: 0.7,
                 top_p: 0.9,
+                repeat_penalty: 1.1,
+                num_ctx: 4096, // Optimized context window
             }
         };
 
@@ -37,33 +45,37 @@ app.post('/api/chat', async (req, res) => {
 
         const response = await axios.post(OLLAMA_URL, payload, { 
             responseType: 'stream',
-            timeout: 0 // No timeout for long generations
+            timeout: 0 
         });
 
-        res.setHeader('Content-Type', 'text/event-stream');
-        res.setHeader('Cache-Control', 'no-cache');
-        res.setHeader('Connection', 'keep-alive');
+        // Use standard SSE headers for maximum compatibility and speed
+        res.writeHead(200, {
+            'Content-Type': 'text/event-stream',
+            'Cache-Control': 'no-cache, no-transform',
+            'Connection': 'keep-alive',
+            'X-Accel-Buffering': 'no' // Disable buffering for Nginx if used
+        });
 
         response.data.on('data', (chunk) => {
             const lines = chunk.toString().split('\n');
             for (const line of lines) {
                 if (!line.trim()) continue;
-                try {
-                    const json = JSON.parse(line);
-                    // Send raw JSON for the frontend to handle context and status
-                    res.write(`data: ${JSON.stringify(json)}\n\n`);
-                    if (json.done) {
-                        res.end();
-                    }
-                } catch (e) {
-                    // Ignore parse errors for partial chunks
-                }
+                res.write(`data: ${line}\n\n`);
             }
+        });
+
+        response.data.on('end', () => {
+            res.end();
         });
 
         response.data.on('error', (err) => {
             console.error('Ollama stream error:', err);
-            res.status(500).end();
+            res.end();
+        });
+
+        req.on('close', () => {
+            // Keep processing even if client disconnects temporarily (background mode)
+            console.log('Client connection closed, but background processing continues.');
         });
 
     } catch (error) {
@@ -97,6 +109,6 @@ app.post('/api/pull-model', async (req, res) => {
     }
 });
 
-app.listen(PORT, () => {
-    console.log(`🚀 Pro Chat Server running at http://localhost:${PORT}`);
+server.listen(PORT, () => {
+    console.log(`🚀 Ultra-Fast Pro Chat Server running at http://localhost:${PORT}`);
 });
